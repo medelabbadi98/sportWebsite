@@ -28,6 +28,36 @@ db.connect(err => {
     if (err) throw err;
     console.log('Connected to MySQL');
 });
+const createUsersTable = `
+CREATE TABLE IF NOT EXISTS users (
+    ID INT NOT NULL AUTO_INCREMENT,
+    email VARCHAR(255) CHARACTER SET 'utf8mb4' NOT NULL,
+    password VARCHAR(255) CHARACTER SET 'utf8mb4' NOT NULL,
+    type VARCHAR(255) CHARACTER SET 'utf8mb4' NOT NULL,
+    active TINYINT DEFAULT 1,
+    PRIMARY KEY (ID)
+);
+`;
+
+db.query(createUsersTable, (err) => {
+    if (err) throw err;
+    console.log('Users table ready');
+});
+db.query(`
+    DELIMITER $$
+    CREATE PROCEDURE addUser(
+        IN userEmail VARCHAR(255),
+        IN userPassword VARCHAR(255),
+        IN userType VARCHAR(255)
+    )
+    BEGIN
+        INSERT INTO users (email, password, type) VALUES (userEmail, userPassword, userType);
+    END $$
+    DELIMITER ;
+    `, (err) => {
+        if (err) console.log('Stored procedure already exists');
+        else console.log('Stored procedure created');
+    });
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
